@@ -10,26 +10,21 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 
-void error(const char *msg)
-{
-    perror(msg);
-    exit(1);
-}
-
 int main(int argc, char const *argv[]) 
 { 
 	// check to see if user input is valid
 	char socket_read_buffer[1024];
-	
+
 	// TODO: Fill out the server ip and port
-	std::string server_ip = "127.0.0.1";
-	std::string server_port = "10000";
+	std::string server_ip = "172.20.10.3";
+	std::string server_port = "1119";
 
 	int opt = 1;
 	int client_fd = -1;
 
 	// TODO: Create a TCP socket()
-	client_fd = socket(AF_INET, SOCK_STREAM,0);
+   client_fd =  socket(AF_INET, SOCK_STREAM, 0 );
+
 	// Enable reusing address and port
 	if (setsockopt(client_fd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt))) { 
 		return -1;
@@ -40,7 +35,7 @@ int main(int argc, char const *argv[])
 		printf("Error- Socket setup failed");
 		return -1;
 	}
-	
+
 	// Helping you out by pepping the struct for connecting to the server
 	struct addrinfo hints;
 	struct addrinfo *server_addr;
@@ -50,22 +45,23 @@ int main(int argc, char const *argv[])
 	getaddrinfo(server_ip.c_str(), server_port.c_str(), &hints, &server_addr);
 
 	// TODO: Connect() to the server (hint: you'll need to use server_addr)
-	if(connect(client_fd, server_addr->ai_addr,sizeof(server_addr->ai_addr)) < 0)
-		error("ERROR connecting");
+    int socket_a = connect(client_fd, server_addr ->ai_addr, server_addr ->ai_addrlen);
+
 	// TODO: Retreive user input
-	std::cout << "Please enter the message: ";
-	std::cin >> socket_read_buffer;
+	std:: string input ="";
+	std:: cout << "Write message to server:";
+    std::getline(std::cin, input);
+
 	// TODO: Send() the user input to the server
-	int n = write(client_fd,socket_read_buffer,sizeof(socket_read_buffer));
-	if(n < 0)
-		error("ERROR writing to socket");
+    send(client_fd, input.c_str(), input.length(), 0);
+
 	// TODO: Recieve any messages from the server and print it here. Don't forget to make sure the string is null terminated!
-	bzero(socket_read_buffer,1024);
-	n = read(client_fd,socket_read_buffer,1023);
-	if(n < 0)
-		error("ERROR reading from socket");
-	std::cout << socket_read_buffer << std::endl;
+    
+    recv(client_fd, socket_read_buffer,1024, 0);
+    std:: cout << socket_read_buffer;
+
 	// TODO: Close() the socket
-	close(client_fd);
+    close(client_fd);
+
 	return 0; 
 } 
